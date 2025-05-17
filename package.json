@@ -1,6 +1,6 @@
 {
   "name": "pdf417js",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "PDF417 barcode generator",
   "author": "Fuminori Ogawa",
   "license": "ISC",
