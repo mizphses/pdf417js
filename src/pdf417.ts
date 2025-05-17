@@ -36,43 +36,55 @@ export class PDF417 {
   private static readonly START_PATTERN = "11111111010101000";
   private static readonly STOP_PATTERN = "111111101000101001";
 
-  private static readonly TEXT_SUBMODES: number[][] = [
+  private static readonly TEXT_SUBMODES_MAP = new Map([
     [
-      0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c,
-      0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58,
-      0x59, 0x5a, 0x20, 0xfd, 0xfe, 0xff,
-    ], // Alpha
+      "alpha",
+      new Uint8Array([
+        0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c,
+        0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58,
+        0x59, 0x5a, 0x20, 0xfd, 0xfe, 0xff,
+      ]),
+    ],
     [
-      0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c,
-      0x6d, 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
-      0x79, 0x7a, 0x20, 0xfd, 0xfe, 0xff,
-    ], // Lower
+      "lower",
+      new Uint8Array([
+        0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c,
+        0x6d, 0x6e, 0x6f, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78,
+        0x79, 0x7a, 0x20, 0xfd, 0xfe, 0xff,
+      ]),
+    ],
     [
-      0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x26, 0x0d,
-      0x09, 0x2c, 0x3a, 0x23, 0x2d, 0x2e, 0x24, 0x2f, 0x2b, 0x25, 0x2a, 0x3d,
-      0x5e, 0xfb, 0x20, 0xfd, 0xfe, 0xff,
-    ], // Mixed
+      "mixed",
+      new Uint8Array([
+        0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x26, 0x0d,
+        0x09, 0x2c, 0x3a, 0x23, 0x2d, 0x2e, 0x24, 0x2f, 0x2b, 0x25, 0x2a, 0x3d,
+        0x5e, 0xfb, 0x20, 0xfd, 0xfe, 0xff,
+      ]),
+    ],
     [
-      0x3b, 0x3c, 0x3e, 0x40, 0x5b, 0x5c, 0x5d, 0x5f, 0x60, 0x7e, 0x21, 0x0d,
-      0x09, 0x2c, 0x3a, 0x0a, 0x2d, 0x2e, 0x24, 0x2f, 0x22, 0x7c, 0x2a, 0x28,
-      0x29, 0x3f, 0x7b, 0x7d, 0x27, 0xff,
-    ], // Punctuation
-  ];
+      "punctuation",
+      new Uint8Array([
+        0x3b, 0x3c, 0x3e, 0x40, 0x5b, 0x5c, 0x5d, 0x5f, 0x60, 0x7e, 0x21, 0x0d,
+        0x09, 0x2c, 0x3a, 0x0a, 0x2d, 0x2e, 0x24, 0x2f, 0x22, 0x7c, 0x2a, 0x28,
+        0x29, 0x3f, 0x7b, 0x7d, 0x27, 0xff,
+      ]),
+    ],
+  ]);
 
-  private static readonly TEXT_LATCH: Record<string, number[]> = {
-    "01": [27],
-    "02": [28],
-    "03": [28, 25],
-    "10": [28, 28],
-    "12": [28],
-    "13": [28, 25],
-    "20": [28],
-    "21": [27],
-    "23": [25],
-    "30": [29],
-    "31": [29, 27],
-    "32": [29, 28],
-  };
+  private static readonly TEXT_LATCH_MAP = new Map([
+    ["01", [27]],
+    ["02", [28]],
+    ["03", [28, 25]],
+    ["10", [28, 28]],
+    ["12", [28]],
+    ["13", [28, 25]],
+    ["20", [28]],
+    ["21", [27]],
+    ["23", [25]],
+    ["30", [29]],
+    ["31", [29, 27]],
+    ["32", [29, 28]],
+  ]);
 
   private static readonly CLUSTERS = CLUSTERS;
 
@@ -547,62 +559,53 @@ export class PDF417 {
         const codelen = code.length;
         for (let i = 0; i < codelen; ++i) {
           const chval = code.charCodeAt(i);
-          let k = PDF417.TEXT_SUBMODES[submode].indexOf(chval);
+          const alphaSubmode = PDF417.TEXT_SUBMODES_MAP.get("alpha");
+          if (!alphaSubmode) continue;
+          let k = alphaSubmode.indexOf(chval);
           if (k !== -1) {
             // we are on the same sub-mode
             txtarr.push(k);
-          } else {
-            // the sub-mode is changed
-            let foundNewSubmode = false;
-            for (let s = 0; s < 4; ++s) {
-              // search new sub-mode
-              if (s !== submode) {
-                k = PDF417.TEXT_SUBMODES[s].indexOf(chval);
-                if (k !== -1) {
-                  // s is the new submode
-                  // Determine if shift or latch
-                  const nextCharIsCurrentSubmode =
-                    i + 1 < codelen &&
-                    PDF417.TEXT_SUBMODES[submode].indexOf(
-                      code.charCodeAt(i + 1),
-                    ) !== -1;
+            continue;
+          }
+          // search new sub-mode
+          let foundNewSubmode = false;
+          for (let s = 0; s < 4; ++s) {
+            if (s !== submode) {
+              const newSubmode = PDF417.TEXT_SUBMODES_MAP.get(s.toString());
+              if (!newSubmode) continue;
+              k = newSubmode.indexOf(chval);
+              if (k !== -1) {
+                // s is the new submode
+                // Determine if shift or latch
+                const currentSubmode = PDF417.TEXT_SUBMODES_MAP.get(
+                  submode.toString(),
+                );
+                if (!currentSubmode) continue;
+                const nextCharIsCurrentSubmode =
+                  i + 1 < codelen &&
+                  currentSubmode.indexOf(code.charCodeAt(i + 1)) !== -1;
 
-                  // Shift conditions from original JS:
-                  // (i + 1 == codelen || (i + 1 < codelen && this._array_search(this._ord(code.charAt(i + 1)),this.textsubmodes[submode]) !== false))
-                  // && (s == 3 || (s == 0 && submode == 1))
-                  // Shift to Punctuation (s=3) or Alpha from Lower (s=0, submode=1) if next char is back to original or end of string.
-                  if (
-                    (i + 1 === codelen || nextCharIsCurrentSubmode) &&
-                    (s === 3 || (s === 0 && submode === 1))
-                  ) {
-                    // Shift
-                    if (s === 3)
-                      txtarr.push(29); // Shift to Punctuation
-                    else txtarr.push(27); // Shift from Lower to Alpha (tsl)
-                  } else {
-                    // Latch
-                    const latchKey = `${submode}${s}`;
-                    if (PDF417.TEXT_LATCH[latchKey]) {
-                      txtarr.push(...PDF417.TEXT_LATCH[latchKey]);
-                    }
-                    submode = s; // set new submode
+                if (nextCharIsCurrentSubmode) {
+                  // Shift
+                  txtarr.push(27, k);
+                } else {
+                  // Latch
+                  const latchKey = `${submode}${s}`;
+                  const latchValue = PDF417.TEXT_LATCH_MAP.get(latchKey);
+                  if (latchValue) {
+                    txtarr.push(...latchValue);
                   }
-                  txtarr.push(k); // add character code to array
-                  foundNewSubmode = true;
-                  break;
+                  submode = s; // set new submode
                 }
+                txtarr.push(k);
+                foundNewSubmode = true;
+                break;
               }
             }
-            if (!foundNewSubmode) {
-              // Character not found in any submode, might be an issue or require byte mode.
-              // For now, this case is not explicitly handled as in original if char is totally unencodable in Text.
-              // Original code would likely have switched to Byte mode earlier via getInputSequences.
-              // If it reaches here, it implies the char should be encodable by some text submode.
-              // This path should ideally not be hit if getInputSequences correctly segments.
-              // As a fallback, let's push a space-like value or handle as an error.
-              // Pushing '29' (padding) might be a way to handle, or throw error.
-              // For now, let's assume valid characters. If an error occurs, it implies a bug in mode detection or input.
-            }
+          }
+          if (!foundNewSubmode) {
+            // Character not found in any submode
+            txtarr.push(29); // Push padding as fallback
           }
         }
         let txtarrlen = txtarr.length;
