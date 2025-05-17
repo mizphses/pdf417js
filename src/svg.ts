@@ -16,6 +16,6 @@ export function renderPDF417ToSVG(matrix: number[][], moduleSize = 2): string {
       }
     }
   }
-  svg += `</svg>`;
+  svg += "</svg>";
   return svg;
 }

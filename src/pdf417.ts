@@ -238,7 +238,7 @@ export class PDF417 {
       const cw = this.getCompaction(
         sequence[i][0] as number,
         sequence[i][1] as string,
-        true
+        true,
       );
       codewords = codewords.concat(cw);
     }
@@ -248,7 +248,7 @@ export class PDF417 {
       codewords.shift();
     }
 
-    let numcw = codewords.length;
+    const numcw = codewords.length;
     if (numcw > 925) {
       // Reached maximum data codeword capacity
       console.error("PDF417 Error: reached maximum data codeword capacity.");
@@ -257,7 +257,7 @@ export class PDF417 {
 
     const resolvedEcl = this.getErrorCorrectionLevel(
       this.options.errorCorrectionLevel,
-      numcw
+      numcw,
     );
     const errsize = 2 << resolvedEcl; // number of codewords for error correction
     const nce = numcw + errsize + 1; // total codewords + symbol length descriptor
@@ -265,10 +265,10 @@ export class PDF417 {
     // calculate number of columns (number of codewords per row) and rows
     let cols = Math.round(
       (Math.sqrt(
-        4761 + 68 * this.options.aspectRatio * this.options.rowHeight * nce
+        4761 + 68 * this.options.aspectRatio * this.options.rowHeight * nce,
       ) -
         69) /
-        34
+        34,
     );
 
     // adjust cols
@@ -420,7 +420,7 @@ export class PDF417 {
       // for each column (data codewords)
       for (let c = 0; c < cols; ++c) {
         rowPatternStr += this.getCodewordPattern(
-          currentClusterSet[codewords[k]]
+          currentClusterSet[codewords[k]],
         );
         ++k;
       }
@@ -471,7 +471,7 @@ export class PDF417 {
     const numseqMatches = Array.from(code.matchAll(/([0-9]{13,44})/g));
     const numseq: [string, number][] = numseqMatches.map((match) => [
       match[1],
-      match.index!,
+      match.index ?? 0,
     ]);
 
     numseq.push(["", code.length]); // Add a sentinel for processing the rest of the string
@@ -486,11 +486,11 @@ export class PDF417 {
         // extract text sequence before the number sequence
         const prevseq = code.substring(offset, currentNumSeqOffset);
         const textseqMatches = Array.from(
-          prevseq.matchAll(/([\x09\x0a\x0d\x20-\x7e]{5,})/g)
+          prevseq.matchAll(/([\t\n\r\x20-\x7e]{5,})/g),
         );
         const textseq: [string, number][] = textseqMatches.map((match) => [
           match[1],
-          match.index!,
+          match.index ?? 0,
         ]);
         textseq.push(["", prevseq.length]); // Sentinel
 
@@ -504,7 +504,7 @@ export class PDF417 {
             // extract byte sequence before the text sequence
             const prevtxtseq = prevseq.substring(
               txtoffset,
-              currentTextSeqOffset
+              currentTextSeqOffset,
             );
             if (prevtxtseq.length > 0) {
               // add BYTE sequence
@@ -564,7 +564,7 @@ export class PDF417 {
                   const nextCharIsCurrentSubmode =
                     i + 1 < codelen &&
                     PDF417.TEXT_SUBMODES[submode].indexOf(
-                      code.charCodeAt(i + 1)
+                      code.charCodeAt(i + 1),
                     ) !== -1;
 
                   // Shift conditions from original JS:
@@ -576,7 +576,8 @@ export class PDF417 {
                     (s === 3 || (s === 0 && submode === 1))
                   ) {
                     // Shift
-                    if (s === 3) txtarr.push(29); // Shift to Punctuation
+                    if (s === 3)
+                      txtarr.push(29); // Shift to Punctuation
                     else txtarr.push(27); // Shift from Lower to Alpha (tsl)
                   } else {
                     // Latch
@@ -620,7 +621,7 @@ export class PDF417 {
       case 901: // Byte Compaction mode latch (any number of bytes)
       case 924: {
         // Byte Compaction mode latch (multiple of 6 bytes)
-        let tempCode = code;
+        const tempCode = code;
         const codelen = tempCode.length;
 
         if (mode === 924 && codelen % 6 === 0) {
@@ -665,7 +666,7 @@ export class PDF417 {
           const block = tempCode.substring(0, Math.min(44, tempCode.length));
           tempCode = tempCode.substring(block.length);
 
-          let t = BigInt("1" + block); // Prepend "1"
+          let t = BigInt(`1${block}`); // Prepend "1"
           const block_cw: number[] = [];
           do {
             const d = Number(t % 900n);

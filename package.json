@@ -11,10 +11,14 @@
     "build": "tsc",
     "test": "vitest",
     "test:watch": "vitest watch",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "lint": "pnpm biome lint src",
+    "format": "pnpm biome format src",
+    "typecheck": "tsc --noEmit",
+    "fix": "biome check --write src"
   },
-  "dependencies": {},
   "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
     "typescript": "^5.3.3",
     "vitest": "^3.1.3"
   }

@@ -2,6 +2,16 @@
 
 TypeScript implementation of PDF417 barcode generator.
 
+[日本語版ドキュメントはこちら](./docs/README.ja.md)
+
+## Features
+
+- 🚀 Pure TypeScript implementation - no external dependencies
+- 🌐 Web standards compliant - works in any modern browser and workers ... maybe
+- 📦 Standalone library - easy to integrate into any project
+- 🔧 Fully customizable barcode generation
+- 📱 Responsive and scalable output
+
 ## Installation
 
 ```bash

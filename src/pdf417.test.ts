@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { PDF417 } from "./pdf417";
 import { renderPDF417ToSVG } from "./svg";
 
@@ -64,7 +64,7 @@ describe("PDF417", () => {
     const text = "Test Data";
     const levels = [0, 1, 2, 3, 4, 5, 6, 7, 8];
 
-    levels.forEach((level) => {
+    for (const level of levels) {
       const pdf417 = new PDF417({ errorCorrectionLevel: level });
       const result = pdf417.generate(text);
       expect(result).not.toBe(false);
@@ -72,7 +72,7 @@ describe("PDF417", () => {
         expect(result).toHaveProperty("bcode");
         expect(Array.isArray(result.bcode)).toBe(true);
       }
-    });
+    }
   });
 
   it("should handle numeric data", () => {
