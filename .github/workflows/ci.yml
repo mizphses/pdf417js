@@ -16,10 +16,10 @@ jobs:
           version: 8
       - uses: actions/setup-node@v4
         with:
-          node-version: "20.x"
+          node-version: "22.x"
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
 
   lint:
     needs: setup
@@ -34,7 +34,7 @@ jobs:
           node-version: "20.x"
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Run lint
         run: pnpm run lint
       - name: Run format check
@@ -56,7 +56,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Run tests
         run: pnpm test
 
@@ -76,6 +76,6 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: "pnpm"
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --no-frozen-lockfile
       - name: Build
         run: pnpm run build
