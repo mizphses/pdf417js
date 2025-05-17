@@ -1,0 +1,16 @@
+{
+  "name": "pdf417js",
+  "version": "1.0.0",
+  "description": "PDF417 barcode generator",
+  "main": "dist/pdf417.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:watch": "vitest watch"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "vitest": "^3.1.3"
+  }
+}
