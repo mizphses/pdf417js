@@ -250,7 +250,7 @@ export class PDF417 {
       const cw = this.getCompaction(
         sequence[i][0] as number,
         sequence[i][1] as string,
-        true
+        true,
       );
       codewords = codewords.concat(cw);
     }
@@ -269,7 +269,7 @@ export class PDF417 {
 
     const resolvedEcl = this.getErrorCorrectionLevel(
       this.options.errorCorrectionLevel,
-      numcw
+      numcw,
     );
     const errsize = 2 << resolvedEcl; // number of codewords for error correction
     const nce = numcw + errsize + 1; // total codewords + symbol length descriptor
@@ -277,10 +277,10 @@ export class PDF417 {
     // calculate number of columns (number of codewords per row) and rows
     let cols = Math.round(
       (Math.sqrt(
-        4761 + 68 * this.options.aspectRatio * this.options.rowHeight * nce
+        4761 + 68 * this.options.aspectRatio * this.options.rowHeight * nce,
       ) -
         69) /
-        34
+        34,
     );
 
     // adjust cols
@@ -432,7 +432,7 @@ export class PDF417 {
       // for each column (data codewords)
       for (let c = 0; c < cols; ++c) {
         rowPatternStr += this.getCodewordPattern(
-          currentClusterSet[codewords[k]]
+          currentClusterSet[codewords[k]],
         );
         ++k;
       }
@@ -498,7 +498,7 @@ export class PDF417 {
         // extract text sequence before the number sequence
         const prevseq = code.substring(offset, currentNumSeqOffset);
         const textseqMatches = Array.from(
-          prevseq.matchAll(/([\t\n\r\x20-\x7e]{5,})/g)
+          prevseq.matchAll(/([\t\n\r\x20-\x7e]{5,})/g),
         );
         const textseq: [string, number][] = textseqMatches.map((match) => [
           match[1],
@@ -516,7 +516,7 @@ export class PDF417 {
             // extract byte sequence before the text sequence
             const prevtxtseq = prevseq.substring(
               txtoffset,
-              currentTextSeqOffset
+              currentTextSeqOffset,
             );
             if (prevtxtseq.length > 0) {
               // add BYTE sequence
@@ -578,7 +578,7 @@ export class PDF417 {
                 // s is the new submode
                 // Determine if shift or latch
                 const currentSubmode = PDF417.TEXT_SUBMODES_MAP.get(
-                  submode.toString()
+                  submode.toString(),
                 );
                 if (!currentSubmode) continue;
                 const nextCharIsCurrentSubmode =
