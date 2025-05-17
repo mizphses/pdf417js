@@ -1,0 +1,75 @@
+name: Publish Package
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    outputs:
+      release_tag: ${{ steps.release_tag.outputs.VERSION }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate release tag
+        id: release_tag
+        run: |
+          VERSION=$(date +'%Y.%m.%d.%H%M')
+          echo "VERSION=v$VERSION" >> $GITHUB_OUTPUT
+        env:
+          TZ: "Asia/Tokyo"
+
+      - name: Release
+        run: |
+          gh release create ${{ steps.release_tag.outputs.VERSION }} \
+            --title "Release ${{ steps.release_tag.outputs.VERSION }}" \
+            --generate-notes \
+            --prerelease \
+            --target main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20.x"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Publish
+        run: pnpm publish --no-git-checks
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  finalize-release:
+    name: Finalize Release
+    needs: [release, build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Update release to formal release
+        run: |
+          gh release edit ${{ needs.release.outputs.release_tag }} \
+            --prerelease=false \
+            --latest
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

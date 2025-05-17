@@ -2,6 +2,12 @@
   "name": "pdf417js",
   "version": "1.0.0",
   "description": "PDF417 barcode generator",
+  "author": "Fuminori Ogawa",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mizphses/pdf417js"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
